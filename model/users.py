@@ -14,6 +14,7 @@ class User(db.Model):
     updateTime = db.Column(db.DateTime, default=None, onupdate=datetime.utcnow, comment='更新时间')
     status = db.Column(db.Boolean, default=True, comment='状态（1 启用，0 禁用）')
     userName = db.Column(db.String(50), nullable=False, comment='用户名')
+    password = db.Column(db.String(255), nullable=False, comment='password')
     userGender = db.Column(db.Boolean, default=0, comment='性别（0 未知，1 男，2 女）')
     nickName = db.Column(db.String(100), default=None, comment='昵称')
     userPhone = db.Column(db.String(20), default=None, comment='用户电话')
