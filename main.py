@@ -10,11 +10,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db_init(app)
 
 
-from controller.check import check_api
-from controller.users_controller import user_api
-# 注册 controller
+from api.check import check_api
+from api.auth import auth_api
+# 注册 api
 app.register_blueprint(check_api, url_prefix='/check')
-app.register_blueprint(user_api, url_prefix='/user')
+app.register_blueprint(auth_api, url_prefix='/auth')
 
 if __name__ == '__main__':
     app.run(
