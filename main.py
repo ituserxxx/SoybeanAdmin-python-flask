@@ -19,7 +19,7 @@ from api.auth import auth_api
 app.register_blueprint(check_api, url_prefix='/check')
 app.register_blueprint(auth_api, url_prefix='/auth')
 
-from api.jwt_middleware import check_authorization
+from api.middleware import check_authorization
 
 # 在每个请求之前校验 Authorization 参数
 @app.before_request
