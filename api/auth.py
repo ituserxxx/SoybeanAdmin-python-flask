@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint,request
 from flask_wtf import FlaskForm
 from datetime import datetime
 
@@ -10,6 +10,7 @@ from wtforms.validators import DataRequired, Length
 from api import resp
 from model.connent import db
 from model.users import User
+from api.jwt_middleware import generate_token,generate_refresh_token
 
 # 创建一个 Blueprint，命名为 user
 auth_api = Blueprint('auth', __name__)
@@ -31,15 +32,26 @@ def login():
     # 查询用户
     u = User.query.filter_by(userName=userName).first()
 
-    if (u and check_password_hash(u.password, password)) is False:
+    if (u is not None and check_password_hash(u.password, password)) is False:
         return resp.err('Invalid username or password')
 
-    return resp.succ(data=u)
+    return resp.succ(data={
+        "token":generate_token(u.id),
+        "refreshToken":generate_refresh_token(u.id)
+    })
 
 
 @auth_api.route('/getUserInfo', methods=['GET'])
 def getUserInfo():
-    return resp.succ(data={"a": "111"})
+    uid = g.uid
+    u = User.query.filter_by(id=uid).first()
+    data = {
+        "userId": u.id,
+        "userName": u.userName,
+        "roles": [],
+        "buttons": []
+    }
+    return resp.succ(data)
 
 
 @auth_api.route('/add', methods=['POST'])
@@ -58,7 +70,7 @@ def add():
             userName="john_doe",
             password=generate_password_hash("123456"),
             userGender=1,
-            nickName="admin",
+            nickName="John",
             userPhone="1234567890",
             userEmail="johndoe@example.com"
         )
