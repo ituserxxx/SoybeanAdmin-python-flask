@@ -4,9 +4,9 @@ from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Length
-
+from model.connent import db
 from api import resp
-from model.tables import User
+from model.tables import User, UserRole
 from api.middleware import generate_token, generate_refresh_token, verify_refresh_token
 
 # 创建一个 Blueprint，命名为 user
@@ -62,10 +62,11 @@ def refreshToken():
 def getUserInfo():
     uid = g.uid
     u = User.query.filter_by(id=uid).first()
-    data = {
+
+    ul = db.session.query(UserRole.roleCode).filter(UserRole.userId == uid).all()
+    return resp.succ(data={
         "userId": u.id,
         "userName": u.userName,
-        "roles": [],
+        "roles": [item[0] for item in ul],
         "buttons": []
-    }
-    return resp.succ(data)
+    })

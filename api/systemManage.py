@@ -14,6 +14,13 @@ from wtforms.validators import DataRequired, Length
 systemManage_api = Blueprint('systemManage', __name__)
 
 
+@systemManage_api.route('/getAllRoles', methods=['GET'])
+def getAllRoles():
+    ul = db.session.query(Role).with_entities(Role.id, Role.roleName, Role.roleCode).all()
+    ul_dict = [{"id": item[0], "roleName": item[1], "roleCode": item[2]} for item in ul]
+    return resp.succ(data=ul_dict)
+
+
 @systemManage_api.route('/getRoleList', methods=['GET'])
 def getRoleList():
     # 获取 GET 请求中的参数，若没有提供，则使用默认值
@@ -43,12 +50,10 @@ def getRoleList():
     total_count = query.count()
 
     # 分页处理
-    roles = query.offset((current - 1) * size).limit(size).all()
+    ul = query.offset((current - 1) * size).limit(size).all()
 
-    # 将结果转换为字典格式
-    roles_list = [role.to_dict() for role in roles]
     return resp.succ(data={
-        "records": roles_list,
+        "records": [item.to_dict() for item in ul],
         "current": current,
         "size": size,
         "total": total_count
@@ -104,9 +109,34 @@ def getUserList():
     userPhone = request.args.get('userPhone', default=None, type=str)
     userEmail = request.args.get('userEmail', default=None, type=str)
 
-    ul = db.session.query(User, UserRole).filter(User.id == UserRole.userId).all()
-    print(str(ul))
-    return resp.succ(data="用户名已存在")
+    query = db.session.query(User)
+
+
+    # 动态添加查询条件
+    if status is not None:
+        query = query.filter(User.status == status)
+    if userName:
+        query = query.filter(User.userName.like(f'%{userName}%'))  # 模糊查询
+    if userGender is not None:
+        query = query.filter(User.userGender == userGender)
+    if nickName:
+        query = query.filter(User.nickName.like(f'%{nickName}%'))  # 模糊查询
+    if userPhone:
+        query = query.filter(User.userPhone.like(f'%{userPhone}%'))  # 模糊查询
+    if userEmail:
+        query = query.filter(User.userEmail.like(f'%{userEmail}%'))  # 模糊查询
+    # 获取总数
+    total_count = query.count()
+
+    # 执行查询
+    ul = query.offset((current - 1) * size).limit(size).all()
+
+    return resp.succ(data={
+        "records": [item.to_dict() for item in ul],
+        "current": current,
+        "size": size,
+        "total": total_count
+    })
 
 
 @systemManage_api.route('/userAdd', methods=['POST'])

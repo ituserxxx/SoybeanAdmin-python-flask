@@ -29,9 +29,9 @@ def before_request():
     if request.endpoint in ['auth.login']:
         return None  # 不进行校验，继续处理请求
     # 否则进行 Authorization 校验
-    # response = check_authorization()
-    # if response:
-    #     return response  # 如果验证失败，直接返回错误响应
+    response = check_authorization()
+    if response:
+        return response  # 如果验证失败，直接返回错误响应
 
 if __name__ == '__main__':
     app.run(

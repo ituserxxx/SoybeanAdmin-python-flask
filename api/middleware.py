@@ -20,7 +20,6 @@ def check_authorization():
 
     # 获取 token
     token = auth_header[len('Bearer '):]
-    print(token)
     # 这里可以进一步检查 token 是否有效，比如解码 JWT 或其他操作
     payload = verify_token(token)
     if payload is None:  # 假设 'valid_token' 是有效的 token
