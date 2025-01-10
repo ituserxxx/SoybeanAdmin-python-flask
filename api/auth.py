@@ -1,15 +1,12 @@
-from flask import Blueprint, request
+from flask import Blueprint, g
 from flask_wtf import FlaskForm
-from datetime import datetime
 
-from sqlalchemy.exc import IntegrityError
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Length
 
 from api import resp
-from model.connent import db
-from model.users import User
+from model.tables import User
 from api.middleware import generate_token, generate_refresh_token, verify_refresh_token
 
 # 创建一个 Blueprint，命名为 user
@@ -53,7 +50,7 @@ def refreshToken():
 
     payload = verify_refresh_token(form.refreshToken.data)
     if payload is None:  # 假设 'valid_token' 是有效的 token
-        return resp.err('message": "Invalid token')
+        return resp.err('Invalid token')
 
     return resp.succ(data={
         "token": generate_token(payload['uid']),
@@ -72,34 +69,3 @@ def getUserInfo():
         "buttons": []
     }
     return resp.succ(data)
-
-
-@auth_api.route('/add', methods=['POST'])
-def add():
-    # 判断用户名是否已存在
-    existing_user = User.query.filter_by(userName="admin").first()
-
-    if existing_user:
-        # 如果用户名已存在，返回错误信息
-        return resp.succ(data="用户名已存在")
-    else:
-        # 用户名不存在，进行新增操作
-        new_user = User(
-            createBy="admin",
-            createTime=datetime.utcnow(),
-            userName="john_doe",
-            password=generate_password_hash("123456"),
-            userGender=1,
-            nickName="John",
-            userPhone="1234567890",
-            userEmail="johndoe@example.com"
-        )
-        try:
-            db.session.add(new_user)
-            db.session.commit()
-            print("新用户添加成功")
-            return resp.succ(data="新用户添加成功")
-        except IntegrityError:
-            db.session.rollback()
-            print("数据库操作失败")
-            return resp.succ(data="数据库操作失败")
