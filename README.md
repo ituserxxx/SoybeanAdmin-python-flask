@@ -1,6 +1,6 @@
 # SoybeanAdmin-python-flask
 
-
+基于 SoybeanAdmin 的 example 分支 对接的 python Flask 框架后端
 
 
 
